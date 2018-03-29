@@ -1,14 +1,14 @@
 apply plugin: 'com.android.application'
 //apply plugin: 'android-apt'
-apply plugin: 'com.jakewharton.butterknife'
+//apply plugin: 'com.jakewharton.butterknife'
 
 android {
-    compileSdkVersion 24
-    buildToolsVersion '26.0.2'
+    compileSdkVersion 26
+    buildToolsVersion '27.0.3'
     defaultConfig {
         applicationId "com.qrcodescan"
         minSdkVersion 21
-        targetSdkVersion 24
+        targetSdkVersion 26
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -19,10 +19,16 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    sourceSets {
+        main {
+            jniLibs.srcDir 'libs'
+            jni.srcDirs = []
+        }
+    }
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile fileTree(include: ['*.jar'], dir: 'libs')
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
@@ -31,6 +37,8 @@ dependencies {
     compile 'com.google.zxing:core:3.3.0'
     //butterknife注解框架
     compile 'com.jakewharton:butterknife:8.2.1'
+    compile "com.google.code.gson:gson:2.8.0"
     annotationProcessor 'com.jakewharton:butterknife-compiler:8.2.1'
     testCompile 'junit:junit:4.12'
+
 }

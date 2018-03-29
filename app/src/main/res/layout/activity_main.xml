@@ -28,6 +28,8 @@
                 android:background="#999999"
                 />
             <LinearLayout
+                android:id="@+id/fileImport"
+                android:clickable="true"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="3"
@@ -50,6 +52,8 @@
                 android:layout_marginLeft="50dp"
                 android:background="#000000"/>
             <LinearLayout
+                android:id="@+id/qrCodeImport"
+                android:clickable="true"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="3"
@@ -82,11 +86,13 @@
                 android:background="#999999"
                 />
             <LinearLayout
+                android:id="@+id/fileEmport"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="3"
                 android:orientation="horizontal"
                 android:background="#FFFFFF"
+                android:clickable="true"
                 >
                 <TextView
                     android:layout_width="match_parent"
@@ -104,6 +110,8 @@
                 android:layout_marginLeft="50dp"
                 android:background="#000000"/>
             <LinearLayout
+                android:id="@+id/qrcodeEmport"
+                android:clickable="true"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
                 android:layout_weight="3"

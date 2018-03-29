@@ -3,20 +3,29 @@ package com.activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
+import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.View;
 import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.LinearLayout;
 
 import com.google.zxing.WriterException;
 import com.google.zxing.activity.CaptureActivity;
 import com.google.zxing.encoding.EncodingHandler;
 import com.qrcodescan.R;
+import com.scannersetting.ScannerSettingManager;
+import com.uidialog.QrCodeDialog;
 import com.utils.CommonUtil;
+import com.utils.PromptUtils;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -24,60 +33,87 @@ import butterknife.OnClick;
 
 public class MainActivity extends AppCompatActivity {
 
-    @BindView(R.id.openQrCodeScan)
-    Button openQrCodeScan;
-    @BindView(R.id.text)
-    EditText text;
-    @BindView(R.id.CreateQrCode)
-    Button CreateQrCode;
-    @BindView(R.id.QrCode)
-    ImageView QrCode;
-    @BindView(R.id.qrCodeText)
-    TextView qrCodeText;
 
+    @BindView(R.id.fileImport)
+    LinearLayout file_Import;
+    @BindView(R.id.qrCodeImport)
+    LinearLayout qrCode_Import;
+    @BindView(R.id.fileEmport)
+    LinearLayout file_Emport;
+    @BindView(R.id.qrcodeEmport)
+    LinearLayout qrcode_Emport;
     //打开扫描界面请求码
     private int REQUEST_CODE = 0x01;
     //扫描成功返回码
     private int RESULT_OK = 0xA1;
+    public static final int QRCODE_IMPORT_OK=0x10;
+    public static final int QRCODE_IMPORT_ERROR=0x11;
+    public static final int QRCODE_IMPORT_DEVICE_MISMATCH=0x12;
 
+    private Handler uihandler =new Handler(){
+        public void handleMessage(Message msg){
+            switch (msg.what){
+                case QRCODE_IMPORT_OK:
+                    PromptUtils.closeProgressDialog();
+                    PromptUtils.showProgressDialog(MainActivity.this,"二维码导入设置成功",500);
+                    break;
+                case QRCODE_IMPORT_ERROR:
+                    PromptUtils.closeProgressDialog();
+                   PromptUtils.showProgressDialog(MainActivity.this,"二维码导入设置失败",500);
+                   break;
+                   case QRCODE_IMPORT_DEVICE_MISMATCH:
+                       PromptUtils.closeProgressDialog();
+                    Log.d("lipeng", "QRCODE_IMPORT_DEVICE_MISMATCH ");
+                    PromptUtils.showProgressDialog(MainActivity.this,"设备不匹配，导入失败",500);
+                    break;
+
+            }
+        }
+    };
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         this.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        getSupportActionBar().hide();
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
     }
 
-    @OnClick({R.id.openQrCodeScan, R.id.CreateQrCode})
+    @OnClick({R.id.fileImport, R.id.qrCodeImport,R.id.fileEmport,R.id.qrcodeEmport})
     public void onClick(View view) {
         switch (view.getId()) {
-            case R.id.openQrCodeScan:
+            case R.id.qrCodeImport:
                 //打开二维码扫描界面從， cC
                 if(CommonUtil.isCameraCanUse()){
                     Intent intent = new Intent(MainActivity.this, CaptureActivity.class);
                     startActivityForResult(intent, REQUEST_CODE);
                 }else{
-                    Toast.makeText(this,"请反反复复付打开此应用的摄像头权限！",Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this,"ffff请反反复复ffffffff付打开此应用的摄像头权限！",Toast.LENGTH_SHORT).show();
                 }
                 break;
-            /*case R.id.CreateQrCode:
-                try {
-                    //获取输入的文本信息
-                    String str = text.getText().toString().trim();
-                    if(str != null && !"".equals(str.trim())){
-                        //根据输入的文本生成对应的二维码并且显示出来
-                        Bitmap mBitmap = EncodingHandler.createQRCode(text.getText().toString(), 500);
-                        if(mBitmap != null){
-                            Toast.makeText(this,"二维码生成成功！",Toast.LENGTH_SHORT).show();
-                            QrCode.setImageBitmap(mBitmap);
-                        }
-                    }else{
-                        Toast.makeText(this,"文本信息不能为空！",Toast.LENGTH_SHORT).show();
+            case R.id.qrcodeEmport:
+                String str=ScannerSettingManager.getInstance(MainActivity.this,this.uihandler).setScannerSettingtoJsonBean();
+                if (str!=null&&!"".equals(str.trim())){
+                   // Bitmap mBitmap = EncodingHandler.createQRCode(str, 500);
+                    try {
+                        Bitmap mBitmap=EncodingHandler.createQRCode(str,500);
+                        QrCodeDialog.Builder dialogBuild=new QrCodeDialog.Builder(MainActivity.this);
+                        dialogBuild.setImage(mBitmap);
+                        QrCodeDialog dialog=dialogBuild.create();
+                        //设置和屏幕同样的宽高
+                        Window dialogWindow = dialog.getWindow();
+                        WindowManager.LayoutParams lp=dialog.getWindow().getAttributes();
+                        DisplayMetrics d = getResources().getDisplayMetrics();
+                        lp.height=d.heightPixels;
+                        lp.width=d.widthPixels;
+                        dialogWindow.setAttributes(lp);
+
+                        dialog.setCanceledOnTouchOutside(true);
+                        dialog.show();
+                    }catch (WriterException e){
+                        e.printStackTrace();
                     }
-                } catch (WriterException e) {
-                    e.printStackTrace();
                 }
-                break;*/
         }
     }
 
@@ -87,9 +123,18 @@ public class MainActivity extends AppCompatActivity {
         //扫描结果回调
         if (resultCode == RESULT_OK) { //RESULT_OK = -1
             Bundle bundle = data.getExtras();
-            String scanResult = bundle.getString("qr_scan_result");
+            final String scanResult = bundle.getString("qr_scan_result");
+           PromptUtils.showProgressDialog(MainActivity.this,"扫描设置正在导入");
             //将扫描出的信息显示出来
-            qrCodeText.setText(scanResult);
+          //  qrCodeText.setText(scanResult);
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                  //  PromptUtils.showProgressDialog(MainActivity.this,"扫描设置正在导入");
+                    ScannerSettingManager.getInstance(MainActivity.this,uihandler).SetScannerByJsonBean(scanResult);
+                }
+            }).start();
+
         }
     }
 }
