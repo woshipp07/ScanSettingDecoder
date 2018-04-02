@@ -61,6 +61,8 @@ public class ScannerSettingManager {
         sScannerManager.setScannerSoundEnable(mscannerBean.isScannerSoundEnable());
         //是否启动震动
         sScannerManager.setScannerVibratorEnable(mscannerBean.isScannerVibrateorEnable());
+        //设置是否复制到剪切板
+        sScannerManager.setScanerCopyEnable(mscannerBean.isScannerDateCopyToClipboard());
         //设置添加后缀
         String scannerExtra=mscannerBean.getScannerExtra();
         if(scannerExtra==null){
@@ -69,7 +71,7 @@ public class ScannerSettingManager {
           //  return;
         }
         Log.d("lipeng", "333333333333");
-     //   sScannerManager.setScannerExtra(scannerExtra);
+        sScannerManager.setScannerExtra(scannerExtra);
         //设置是否启动转义字符功能
         sScannerManager.setEscapeEnable(mscannerBean.isEscapeEnable());
         //设置扫码前缀
@@ -101,7 +103,7 @@ public class ScannerSettingManager {
         scannerBeandata.setScannertransfertype(sScannerManager.getDataTransferType());
         scannerBeandata.setScannerSoundEnable(sScannerManager.getScannerSoundEnable());
         scannerBeandata.setScannerVibrateorEnable(sScannerManager.getScannerVibratorEnable());
-
+        scannerBeandata.setScannerDateCopyToClipboard(sScannerManager.getScanerCopyEnable());
         scannerBeandata.setScannerExtra(sScannerManager.getScannerExtra());
        // Log.d("lipeng", sScannerManager.getScannerExtra());
         scannerBeandata.setEscapeEnable(sScannerManager.getEscapeEnable());

@@ -13,6 +13,7 @@ public class scannerBean {
     private int scannertransfertype;
     private boolean scannerSoundEnable;
     private boolean scannerVibrateorEnable;
+    private boolean scannerDateCopyToClipboard;
     private String scannerExtra;
     private boolean escapeEnable;
     private String scannerPrefix;
@@ -31,13 +32,22 @@ public class scannerBean {
                 ", scannertransfertype=" + scannertransfertype +
                 ", scannerSoundEnable=" + scannerSoundEnable +
                 ", scannerVibrateorEnable=" + scannerVibrateorEnable +
+                ", scannerDateCopyToClipboard=" + scannerDateCopyToClipboard +
                 ", scannerExtra='" + scannerExtra + '\'' +
                 ", escapeEnable=" + escapeEnable +
                 ", scannerPrefix='" + scannerPrefix + '\'' +
                 ", scannerSuffix='" + scannerSuffix + '\'' +
-                ", cutStart='" + cutStart + '\'' +
-                ", cutLenght='" + cutLenght + '\'' +
+                ", cutStart=" + cutStart +
+                ", cutLenght=" + cutLenght +
                 '}';
+    }
+
+    public boolean isScannerDateCopyToClipboard() {
+        return scannerDateCopyToClipboard;
+    }
+
+    public void setScannerDateCopyToClipboard(boolean scannerDateCopyToClipboard) {
+        this.scannerDateCopyToClipboard = scannerDateCopyToClipboard;
     }
 
     public int getCutStart() {

@@ -3,6 +3,7 @@ package com.activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
@@ -26,6 +27,14 @@ import com.scannersetting.ScannerSettingManager;
 import com.uidialog.QrCodeDialog;
 import com.utils.CommonUtil;
 import com.utils.PromptUtils;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -55,16 +64,17 @@ public class MainActivity extends AppCompatActivity {
             switch (msg.what){
                 case QRCODE_IMPORT_OK:
                     PromptUtils.closeProgressDialog();
-                    PromptUtils.showProgressDialog(MainActivity.this,"二维码导入设置成功",500);
+                   // Log.d("lipeng", "111111111111111111111111");
+                    PromptUtils.showProgressDialog(MainActivity.this,"导入设置成功",1500);
                     break;
                 case QRCODE_IMPORT_ERROR:
                     PromptUtils.closeProgressDialog();
-                   PromptUtils.showProgressDialog(MainActivity.this,"二维码导入设置失败",500);
+                   PromptUtils.showProgressDialog(MainActivity.this,"导入设置失败",1500);
                    break;
                    case QRCODE_IMPORT_DEVICE_MISMATCH:
                        PromptUtils.closeProgressDialog();
                     Log.d("lipeng", "QRCODE_IMPORT_DEVICE_MISMATCH ");
-                    PromptUtils.showProgressDialog(MainActivity.this,"设备不匹配，导入失败",500);
+                    PromptUtils.showProgressDialog(MainActivity.this,"设备不匹配，导入失败",1500);
                     break;
 
             }
@@ -114,6 +124,69 @@ public class MainActivity extends AppCompatActivity {
                         e.printStackTrace();
                     }
                 }
+                break;
+            case R.id.fileEmport:
+                String strFile=ScannerSettingManager.getInstance(MainActivity.this,this.uihandler).setScannerSettingtoJsonBean();
+                String filePathExport= Environment.getExternalStorageDirectory().toString()+"/scanSettingJsonDate.json";
+                FileOutputStream fos=null;
+                try {
+                    fos=new FileOutputStream(filePathExport);
+                    fos.write(strFile.getBytes());
+
+                    PromptUtils.showProgressDialog(MainActivity.this,"文件导出成功",1500);
+                }catch(IOException e){
+                    e.printStackTrace();
+                }finally {
+                    if(fos!=null){
+                        try{
+                            fos.close();
+                        }catch (IOException e){
+                            e.printStackTrace();
+                        }
+                    }
+
+                }
+                break;
+            case R.id.fileImport:
+                String filePathImport= Environment.getExternalStorageDirectory().toString()+"/scanSettingJsonDate.json";
+                final File file=new File(filePathImport);
+
+                if(file.exists()){
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            FileInputStream fis=null;
+                            InputStreamReader isr=null;
+                            BufferedReader bf=null;
+                            StringBuffer sb=null;
+                            try {
+                                fis=new FileInputStream(file);
+                                isr= new InputStreamReader(fis);
+                                bf=new BufferedReader(isr);
+                                String line;
+                                sb=new StringBuffer();
+                                while((line=bf.readLine())!=null){
+                                    sb.append(line);
+                                }
+                            }catch (IOException e){
+                                e.printStackTrace();
+                            }finally {
+                                try {
+                                    fis.close();
+                                    isr.close();
+                                    bf.close();
+                                }catch (IOException e){
+                                    e.printStackTrace();
+                                }
+                            }
+                            //  PromptUtils.showProgressDialog(MainActivity.this,"扫描设置正在导入");
+                            ScannerSettingManager.getInstance(MainActivity.this,uihandler).SetScannerByJsonBean(sb.toString());
+                        }
+                    }).start();
+                }else{
+                    PromptUtils.showProgressDialog(MainActivity.this,"导入文件不存在",1500);
+                }
+                break;
         }
     }
 
