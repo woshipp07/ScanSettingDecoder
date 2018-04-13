@@ -1,11 +1,17 @@
 package com.activity;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.DisplayMetrics;
 import android.util.Log;
@@ -63,16 +69,16 @@ public class MainActivity extends AppCompatActivity {
         public void handleMessage(Message msg){
             switch (msg.what){
                 case QRCODE_IMPORT_OK:
-                    PromptUtils.closeProgressDialog();
-                   // Log.d("lipeng", "111111111111111111111111");
+                   // PromptUtils.closeProgressDialog();
+                    Log.d("lipeng", "111111111111111111111111");
                     PromptUtils.showProgressDialog(MainActivity.this,"导入设置成功",1500);
                     break;
                 case QRCODE_IMPORT_ERROR:
-                    PromptUtils.closeProgressDialog();
+                    //PromptUtils.closeProgressDialog();
                    PromptUtils.showProgressDialog(MainActivity.this,"导入设置失败",1500);
                    break;
                    case QRCODE_IMPORT_DEVICE_MISMATCH:
-                       PromptUtils.closeProgressDialog();
+                      // PromptUtils.closeProgressDialog();
                     Log.d("lipeng", "QRCODE_IMPORT_DEVICE_MISMATCH ");
                     PromptUtils.showProgressDialog(MainActivity.this,"设备不匹配，导入失败",1500);
                     break;
@@ -89,20 +95,82 @@ public class MainActivity extends AppCompatActivity {
         ButterKnife.bind(this);
     }
 
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if(requestCode==1){
+            if(grantResults.length>=1){
+                int cameraResult=grantResults[0];
+                boolean cameraGranted=cameraResult==PackageManager.PERMISSION_GRANTED;
+                if(cameraGranted){
+                    if(CommonUtil.isCameraCanUse())
+                    {
+                        Intent intent = new Intent(MainActivity.this, CaptureActivity.class);
+                        startActivityForResult(intent, REQUEST_CODE);
+                    }
+                }else{
+                    Toast.makeText(MainActivity.this, "您没有授权该权限，请在设置中打开授权", Toast.LENGTH_SHORT).show();
+                }
+            }
+        }else if(requestCode==2){
+            {
+                if(grantResults.length>=1){
+                    int readExternalResult=grantResults[0];
+                    boolean readExternalGranted=readExternalResult==PackageManager.PERMISSION_GRANTED;
+                    if(readExternalGranted){
+                        fileEmport();
+                        }else{
+                        Toast.makeText(MainActivity.this, "您没有授权该权限，请在设置中打开授权", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }
+        }else if(requestCode==3){
+            {
+                if(grantResults.length>=1){
+                    int writeExternalResult=grantResults[0];
+                    boolean writeExternalGranted=writeExternalResult==PackageManager.PERMISSION_GRANTED;
+                    if(writeExternalGranted){
+                        fileImport();
+                    }else{
+                        Toast.makeText(MainActivity.this, "您没有授权该权限，请在设置中打开授权", Toast.LENGTH_SHORT).show();
+                    }
+                }
+            }
+        }
+    }
+
     @OnClick({R.id.fileImport, R.id.qrCodeImport,R.id.fileEmport,R.id.qrcodeEmport})
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.qrCodeImport:
                 //打开二维码扫描界面從， cC
-                if(CommonUtil.isCameraCanUse()){
-                    Intent intent = new Intent(MainActivity.this, CaptureActivity.class);
-                    startActivityForResult(intent, REQUEST_CODE);
+                if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.M){
+                    if(ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CAMERA)== PackageManager.PERMISSION_GRANTED)
+                    {
+                        if(CommonUtil.isCameraCanUse())
+                            {
+                                Intent intent = new Intent(MainActivity.this, CaptureActivity.class);
+                                startActivityForResult(intent, REQUEST_CODE);
+                            }
+                    }else{
+                        ActivityCompat.requestPermissions(MainActivity.this,new String[]{Manifest.permission.CAMERA},1);
+                    }
                 }else{
-                    Toast.makeText(this,"ffff请反反复复ffffffff付打开此应用的摄像头权限！",Toast.LENGTH_SHORT).show();
+                    if(CommonUtil.isCameraCanUse())
+                    {
+                        Intent intent = new Intent(MainActivity.this, CaptureActivity.class);
+                        startActivityForResult(intent, REQUEST_CODE);
+                    }
                 }
+
+
                 break;
             case R.id.qrcodeEmport:
-                String str=ScannerSettingManager.getInstance(MainActivity.this,this.uihandler).setScannerSettingtoJsonBean();
+                String str=ScannerSettingManager.getInstance(MainActivity.this,this.uihandler).getScannerSettingtoJsonBean();
+                if(str==null){
+                    PromptUtils.showProgressDialog(MainActivity.this,"设备不匹配",1500);
+                    return;
+                }
                 if (str!=null&&!"".equals(str.trim())){
                    // Bitmap mBitmap = EncodingHandler.createQRCode(str, 500);
                     try {
@@ -126,70 +194,95 @@ public class MainActivity extends AppCompatActivity {
                 }
                 break;
             case R.id.fileEmport:
-                String strFile=ScannerSettingManager.getInstance(MainActivity.this,this.uihandler).setScannerSettingtoJsonBean();
-                String filePathExport= Environment.getExternalStorageDirectory().toString()+"/scanSettingJsonDate.json";
-                FileOutputStream fos=null;
-                try {
-                    fos=new FileOutputStream(filePathExport);
-                    fos.write(strFile.getBytes());
-
-                    PromptUtils.showProgressDialog(MainActivity.this,"文件导出成功",1500);
-                }catch(IOException e){
-                    e.printStackTrace();
-                }finally {
-                    if(fos!=null){
-                        try{
-                            fos.close();
-                        }catch (IOException e){
-                            e.printStackTrace();
-                        }
+                if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.M){
+                    if(ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.READ_EXTERNAL_STORAGE)== PackageManager.PERMISSION_GRANTED){
+                        fileEmport();
+                    }else{
+                        ActivityCompat.requestPermissions(MainActivity.this,new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},2);
                     }
-
+                }else{
+                    fileEmport();
                 }
+
                 break;
             case R.id.fileImport:
-                String filePathImport= Environment.getExternalStorageDirectory().toString()+"/scanSettingJsonDate.json";
-                final File file=new File(filePathImport);
-
-                if(file.exists()){
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            FileInputStream fis=null;
-                            InputStreamReader isr=null;
-                            BufferedReader bf=null;
-                            StringBuffer sb=null;
-                            try {
-                                fis=new FileInputStream(file);
-                                isr= new InputStreamReader(fis);
-                                bf=new BufferedReader(isr);
-                                String line;
-                                sb=new StringBuffer();
-                                while((line=bf.readLine())!=null){
-                                    sb.append(line);
-                                }
-                            }catch (IOException e){
-                                e.printStackTrace();
-                            }finally {
-                                try {
-                                    fis.close();
-                                    isr.close();
-                                    bf.close();
-                                }catch (IOException e){
-                                    e.printStackTrace();
-                                }
-                            }
-                            //  PromptUtils.showProgressDialog(MainActivity.this,"扫描设置正在导入");
-                            ScannerSettingManager.getInstance(MainActivity.this,uihandler).SetScannerByJsonBean(sb.toString());
-                        }
-                    }).start();
+                if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.M){
+                    if(ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.WRITE_EXTERNAL_STORAGE)== PackageManager.PERMISSION_GRANTED){
+                        fileImport();
+                    }else{
+                        ActivityCompat.requestPermissions(MainActivity.this,new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},3);
+                    }
                 }else{
-                    PromptUtils.showProgressDialog(MainActivity.this,"导入文件不存在",1500);
+                    fileImport();
                 }
                 break;
         }
     }
+    private void fileImport(){
+        String filePathImport= Environment.getExternalStorageDirectory().toString()+"/scanSettingJsonDate.json";
+        final File file=new File(filePathImport);
+        PromptUtils.showProgressDialog(MainActivity.this,"扫描设置正在导入");
+        if(file.exists()){
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    FileInputStream fis=null;
+                    InputStreamReader isr=null;
+                    BufferedReader bf=null;
+                    StringBuffer sb=null;
+                    try {
+                        fis=new FileInputStream(file);
+                        isr= new InputStreamReader(fis);
+                        bf=new BufferedReader(isr);
+                        String line;
+                        sb=new StringBuffer();
+                        while((line=bf.readLine())!=null){
+                            sb.append(line);
+                        }
+                    }catch (IOException e){
+                        e.printStackTrace();
+                    }finally {
+                        try {
+                            fis.close();
+                            isr.close();
+                            bf.close();
+                        }catch (IOException e){
+                            e.printStackTrace();
+                        }
+                    }
+                    //  PromptUtils.showProgressDialog(MainActivity.this,"扫描设置正在导入");
+                    ScannerSettingManager.getInstance(MainActivity.this,uihandler).SetScannerByJsonBean(sb.toString());
+                }
+            }).start();
+        }else{
+            PromptUtils.showProgressDialog(MainActivity.this,"导入文件不存在",1500);
+        }
+    }
+    private void fileEmport(){
+        String strFile=ScannerSettingManager.getInstance(MainActivity.this,this.uihandler).getScannerSettingtoJsonBean();
+        if(strFile==null){
+            PromptUtils.showProgressDialog(MainActivity.this,"设备不匹配",1500);
+            return;
+        }
+        String filePathExport= Environment.getExternalStorageDirectory().toString()+"/scanSettingJsonDate.json";
+        FileOutputStream fos=null;
+         try {
+             fos=new FileOutputStream(filePathExport);
+            fos.write(strFile.getBytes());
 
+            PromptUtils.showProgressDialog(MainActivity.this,"文件导出成功",1500);
+        }catch(IOException e){
+            e.printStackTrace();
+        }finally {
+            if(fos!=null){
+                try{
+                    fos.close();
+                }catch (IOException e){
+                    e.printStackTrace();
+                }
+            }
+         }
+    }
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);

@@ -1,10 +1,7 @@
 package com.scannersetting;
 
-/**
- * Created by lipeng on 2018/3/26.
- */
-
-public class scannerBean {
+public class scannerBean6735One {
+    private int oneorTwo;
     private String deviceId;
     private boolean keyShotEnable;
     private long keyShotTimeout;
@@ -23,8 +20,9 @@ public class scannerBean {
 
     @Override
     public String toString() {
-        return "scannerBean{" +
-                "deviceId='" + deviceId + '\'' +
+        return "scannerBean6735One{" +
+                "oneorTwo=" + oneorTwo +
+                ", deviceId='" + deviceId + '\'' +
                 ", keyShotEnable=" + keyShotEnable +
                 ", keyShotTimeout=" + keyShotTimeout +
                 ", scannerEnable=" + scannerEnable +
@@ -42,36 +40,12 @@ public class scannerBean {
                 '}';
     }
 
-    public boolean isScannerDateCopyToClipboard() {
-        return scannerDateCopyToClipboard;
+    public int getOneorTwo() {
+        return oneorTwo;
     }
 
-    public void setScannerDateCopyToClipboard(boolean scannerDateCopyToClipboard) {
-        this.scannerDateCopyToClipboard = scannerDateCopyToClipboard;
-    }
-
-    public int getCutStart() {
-        return cutStart;
-    }
-
-    public void setCutStart(int cutStart) {
-        this.cutStart = cutStart;
-    }
-
-    public int getCutLenght() {
-        return cutLenght;
-    }
-
-    public void setCutLenght(int cutLenght) {
-        this.cutLenght = cutLenght;
-    }
-
-    public boolean isEscapeEnable() {
-        return escapeEnable;
-    }
-
-    public void setEscapeEnable(boolean escapeEnable) {
-        this.escapeEnable = escapeEnable;
+    public void setOneorTwo(int oneorTwo) {
+        this.oneorTwo = oneorTwo;
     }
 
     public String getDeviceId() {
@@ -138,12 +112,28 @@ public class scannerBean {
         this.scannerVibrateorEnable = scannerVibrateorEnable;
     }
 
+    public boolean isScannerDateCopyToClipboard() {
+        return scannerDateCopyToClipboard;
+    }
+
+    public void setScannerDateCopyToClipboard(boolean scannerDateCopyToClipboard) {
+        this.scannerDateCopyToClipboard = scannerDateCopyToClipboard;
+    }
+
     public String getScannerExtra() {
         return scannerExtra;
     }
 
     public void setScannerExtra(String scannerExtra) {
         this.scannerExtra = scannerExtra;
+    }
+
+    public boolean isEscapeEnable() {
+        return escapeEnable;
+    }
+
+    public void setEscapeEnable(boolean escapeEnable) {
+        this.escapeEnable = escapeEnable;
     }
 
     public String getScannerPrefix() {
@@ -160,5 +150,21 @@ public class scannerBean {
 
     public void setScannerSuffix(String scannerSuffix) {
         this.scannerSuffix = scannerSuffix;
+    }
+
+    public int getCutStart() {
+        return cutStart;
+    }
+
+    public void setCutStart(int cutStart) {
+        this.cutStart = cutStart;
+    }
+
+    public int getCutLenght() {
+        return cutLenght;
+    }
+
+    public void setCutLenght(int cutLenght) {
+        this.cutLenght = cutLenght;
     }
 }

@@ -274,22 +274,20 @@ public final class PromptUtils {
 			setProgressMsg(msg);
 		} else {
 			try {
-
 				sProgressDialog = ProgressDialog.show(context,
 						context.getString(sPrgrsTitleId), msg, false, false);
-
-				if (maxWaitTime > THRESHOLD_TIME) {
-					sTimer = new Timer();
-					sTimer.schedule(new TimerTask() {
-						@Override
-						public void run() {
-							closeProgressDialog();
-						}
-					}, maxWaitTime);
-				}
-			} catch (Exception e) {
+				} catch (Exception e) {
 				// LogUtils.d(TAG, "showProgressDialog", e);
 			}
+		}
+		if (maxWaitTime > THRESHOLD_TIME) {
+			sTimer = new Timer();
+			sTimer.schedule(new TimerTask() {
+				@Override
+				public void run() {
+					closeProgressDialog();
+				}
+			}, maxWaitTime);
 		}
 	}
 
